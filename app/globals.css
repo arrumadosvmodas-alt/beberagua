@@ -103,3 +103,28 @@ body {
   border-radius: 20px;
   padding: 24px;
 }
+
+@keyframes floatUp {
+  0% {
+    transform: translateY(100vh) rotate(0deg) scale(0.5);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-20vh) rotate(360deg) scale(1.2);
+    opacity: 0;
+  }
+}
+
+.animate-confetti-particle {
+  position: fixed;
+  bottom: 0;
+  animation: floatUp 3.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  z-index: 100;
+  pointer-events: none;
+}

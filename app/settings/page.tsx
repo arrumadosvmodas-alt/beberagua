@@ -1,17 +1,42 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/hooks/useAuth'
-import { supabase } from '@/lib/supabase'
+import { Trash2, Plus } from 'lucide-react'
 
 export default function SettingsPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const [goalLiters, setGoalLiters] = useState(0)
   const [notificationsEnabled, setNotificationsEnabled] = useState(true)
-  const [reminderTime, setReminderTime] = useState('08:00')
+  const [newAlarmTime, setNewAlarmTime] = useState('08:00')
+  const [reminders, setReminders] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
+
+  // Load reminders from localStorage on client side
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedReminders = localStorage.getItem('aguaquero_reminders')
+      const savedEnabled = localStorage.getItem('aguaquero_reminders_enabled')
+      
+      if (savedReminders) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setReminders(JSON.parse(savedReminders))
+      } else {
+        // Defaults
+        const defaultList = ['09:00', '12:00', '15:00', '18:00', '21:00']
+        setReminders(defaultList)
+        localStorage.setItem('aguaquero_reminders', JSON.stringify(defaultList))
+      }
+
+      if (savedEnabled !== null) {
+        setNotificationsEnabled(savedEnabled === 'true')
+      } else {
+        localStorage.setItem('aguaquero_reminders_enabled', 'true')
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -19,38 +44,19 @@ export default function SettingsPage() {
     }
   }, [user, authLoading, router])
 
-  const fetchReminderSettings = useCallback(async () => {
-    if (!user) return
-
-    try {
-      const { data } = await supabase
-        .from('reminder_settings')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
-
-      if (data) {
-        setNotificationsEnabled(data.enabled)
-        setReminderTime(data.start_time?.slice(0, 5) || '08:00')
-      }
-    } catch {
-      console.log('No reminder settings found')
-    }
-  }, [user])
-
   useEffect(() => {
     if (user) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setGoalLiters(user.goal_liters)
-      fetchReminderSettings()
     }
-  }, [user, fetchReminderSettings])
+  }, [user])
 
   const handleSaveGoal = async () => {
     if (!user) return
 
     setSaving(true)
     try {
+      const { supabase } = await import('@/lib/supabase')
       const { error } = await supabase
         .from('users')
         .update({ goal_liters: goalLiters })
@@ -65,56 +71,34 @@ export default function SettingsPage() {
     }
   }
 
-  const handleSaveReminders = async () => {
-    if (!user) return
-
-    setSaving(true)
-    try {
-      const endTime = `${String(parseInt(reminderTime.split(':')[0]) + 20).padStart(2, '0')}:00`
-      let reminderId = null
-
-      const { data: existing } = await supabase
-        .from('reminder_settings')
-        .select('id')
-        .eq('user_id', user.id)
-        .single()
-
-      if (existing?.id) {
-        reminderId = existing.id
-        await supabase
-          .from('reminder_settings')
-          .update({
-            enabled: notificationsEnabled,
-            start_time: `${reminderTime}:00`,
-            end_time: `${endTime}:00`,
-            interval_minutes: 60,
-          })
-          .eq('id', reminderId)
-      } else {
-        await supabase.from('reminder_settings').insert([
-          {
-            user_id: user.id,
-            enabled: notificationsEnabled,
-            start_time: `${reminderTime}:00`,
-            end_time: `${endTime}:00`,
-            interval_minutes: 60,
-          },
-        ])
+  const handleToggleNotifications = () => {
+    const newVal = !notificationsEnabled
+    setNotificationsEnabled(newVal)
+    localStorage.setItem('aguaquero_reminders_enabled', String(newVal))
+    
+    // Request permission if enabling
+    if (newVal && typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission !== 'granted') {
+        Notification.requestPermission()
       }
-
-      // Request browser notification permission if turning on
-      if (notificationsEnabled && typeof window !== 'undefined' && 'Notification' in window) {
-        if (Notification.permission !== 'granted') {
-          await Notification.requestPermission()
-        }
-      }
-
-      alert('Lembretes salvos com sucesso!')
-    } catch {
-      alert('Erro ao salvar lembretes')
-    } finally {
-      setSaving(false)
     }
+  }
+
+  const handleAddAlarm = () => {
+    if (reminders.includes(newAlarmTime)) {
+      alert('Este horário já está adicionado!')
+      return
+    }
+
+    const updated = [...reminders, newAlarmTime].sort()
+    setReminders(updated)
+    localStorage.setItem('aguaquero_reminders', JSON.stringify(updated))
+  }
+
+  const handleRemoveAlarm = (time: string) => {
+    const updated = reminders.filter((t) => t !== time)
+    setReminders(updated)
+    localStorage.setItem('aguaquero_reminders', JSON.stringify(updated))
   }
 
   const playNotificationSound = () => {
@@ -226,52 +210,80 @@ export default function SettingsPage() {
           </button>
         </div>
 
-        {/* Reminder Settings */}
+        {/* Reminders List Settings */}
         <div className="card-duo space-y-4">
           <div>
-            <span className="text-xs font-bold text-[#afafaf] uppercase tracking-wider">Lembretes</span>
-            <h3 className="text-lg font-extrabold text-[#3c3c3c]">Configurar Alertas</h3>
+            <span className="text-xs font-bold text-[#afafaf] uppercase tracking-wider">Lembretes Múltiplos</span>
+            <h3 className="text-lg font-extrabold text-[#3c3c3c]">Configurar Horários de Alerta</h3>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-bold text-[#4b4b4b]">Ativar Notificações do Navegador</label>
-              <button
-                onClick={() => setNotificationsEnabled(!notificationsEnabled)}
-                className={`relative w-14 h-8 rounded-full transition-colors focus:outline-none border-2 border-transparent ${
-                  notificationsEnabled ? 'bg-[#58cc02] border-[#58a700]' : 'bg-[#e5e5e5] border-[#ccc]'
+          <div className="flex items-center justify-between border-b border-[#e5e5e5] pb-4">
+            <label className="text-sm font-bold text-[#4b4b4b]">Ativar Notificações do Navegador</label>
+            <button
+              onClick={handleToggleNotifications}
+              className={`relative w-14 h-8 rounded-full transition-colors focus:outline-none border-2 border-transparent ${
+                notificationsEnabled ? 'bg-[#58cc02] border-[#58a700]' : 'bg-[#e5e5e5] border-[#ccc]'
+              }`}
+            >
+              <div
+                className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                  notificationsEnabled ? 'translate-x-6' : 'translate-x-1'
                 }`}
-              >
-                <div
-                  className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    notificationsEnabled ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
+              />
+            </button>
+          </div>
 
-            {notificationsEnabled && (
+          {notificationsEnabled && (
+            <div className="space-y-4">
+              {/* Add New Alarm */}
               <div className="space-y-2">
                 <label className="block text-xs font-bold text-[#afafaf] uppercase tracking-wider">
-                  Começar Lembretes às:
+                  Adicionar Novo Horário:
                 </label>
-                <input
-                  type="time"
-                  value={reminderTime}
-                  onChange={(e) => setReminderTime(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-[#e5e5e5] rounded-2xl focus:outline-none focus:border-[#1899d6] transition-all bg-[#fafafa] font-bold text-[#3c3c3c]"
-                />
+                <div className="flex gap-3">
+                  <input
+                    type="time"
+                    value={newAlarmTime}
+                    onChange={(e) => setNewAlarmTime(e.target.value)}
+                    className="flex-1 px-4 py-3 border-2 border-[#e5e5e5] rounded-2xl focus:outline-none focus:border-[#1899d6] transition-all bg-[#fafafa] font-bold text-[#3c3c3c]"
+                  />
+                  <button
+                    onClick={handleAddAlarm}
+                    className="btn-3d-blue flex items-center justify-center px-4"
+                  >
+                    <Plus className="w-5 h-5 text-white" />
+                  </button>
+                </div>
               </div>
-            )}
-          </div>
 
-          <button
-            onClick={handleSaveReminders}
-            disabled={saving}
-            className="btn-3d-green w-full py-3 text-sm font-extrabold uppercase disabled:opacity-50"
-          >
-            {saving ? 'Salvando...' : 'Salvar Lembretes'}
-          </button>
+              {/* Alarms List */}
+              <div className="space-y-2 pt-2">
+                <span className="block text-xs font-bold text-[#afafaf] uppercase tracking-wider">
+                  Horários Programados:
+                </span>
+                {reminders.length === 0 ? (
+                  <p className="text-sm text-[#afafaf] font-bold py-2">Nenhum alarme configurado.</p>
+                ) : (
+                  <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    {reminders.map((time) => (
+                      <div
+                        key={time}
+                        className="flex items-center justify-between p-3 border-2 border-[#e5e5e5] rounded-2xl bg-white"
+                      >
+                        <span className="font-extrabold text-[#3c3c3c] text-lg">⏰ {time}</span>
+                        <button
+                          onClick={() => handleRemoveAlarm(time)}
+                          className="w-8 h-8 flex items-center justify-center bg-white border-2 border-[#e5e5e5] border-b-4 border-b-[#e5e5e5] rounded-xl hover:bg-[#ffebef] hover:border-[#ffcdd2] hover:border-b-[#e57373] text-[#afafaf] hover:text-[#ef5350] transition-all active:translate-y-[2px] active:border-b-2"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Test Notification Widget */}
@@ -279,7 +291,7 @@ export default function SettingsPage() {
           <div>
             <span className="text-xs font-bold text-[#1899d6] uppercase tracking-wider">Testador de Alerta</span>
             <h3 className="text-lg font-extrabold text-[#3c3c3c]">Testar Alerta Imediato</h3>
-            <p className="text-xs text-gray-500 mt-1">Clique abaixo para disparar um lembrete pop-up de teste e ver como o alerta do AguaQuero funciona no seu dispositivo.</p>
+            <p className="text-xs text-gray-500 mt-1">Clique abaixo para disparar um alarme de teste e ouvir o som de gota d&apos;água no seu dispositivo.</p>
           </div>
 
           <button
@@ -288,11 +300,6 @@ export default function SettingsPage() {
           >
             Testar Alerta Agora
           </button>
-        </div>
-
-        {/* Info */}
-        <div className="bg-[#e8f4fd] border-2 border-[#84d8ff] border-b-4 border-b-[#187fb3] rounded-2xl p-4 text-sm text-[#187fb3] font-bold">
-          💡 Dica: Notificações locais funcionam melhor no navegador quando mantido aberto. Certifique-se de autorizar o envio de notificações no seu dispositivo.
         </div>
       </div>
 
