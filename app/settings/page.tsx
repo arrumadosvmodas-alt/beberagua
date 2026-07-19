@@ -117,7 +117,39 @@ export default function SettingsPage() {
     }
   }
 
+  const playNotificationSound = () => {
+    if (typeof window === 'undefined') return
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const osc = audioCtx.createOscillator()
+      const gain = audioCtx.createGain()
+
+      osc.connect(gain)
+      gain.connect(audioCtx.destination)
+
+      osc.type = 'sine'
+      const now = audioCtx.currentTime
+
+      // Som de gota d'água: variação rápida de frequência
+      osc.frequency.setValueAtTime(450, now)
+      osc.frequency.exponentialRampToValueAtTime(1300, now + 0.15)
+
+      gain.gain.setValueAtTime(0, now)
+      gain.gain.linearRampToValueAtTime(0.4, now + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3)
+
+      osc.start(now)
+      osc.stop(now + 0.35)
+    } catch (e) {
+      console.error('AudioContext failed:', e)
+    }
+  }
+
   const handleTestReminder = () => {
+    // Play the water drop sound
+    playNotificationSound()
+
     if (typeof window !== 'undefined' && 'Notification' in window) {
       if (Notification.permission === 'granted') {
         new Notification('AguaQuero 💧', {

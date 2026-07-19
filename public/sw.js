@@ -1,6 +1,6 @@
 // Service Worker for Water Tracker PWA
 
-const CACHE_NAME = 'hydra-v1'
+const CACHE_NAME = 'aguaquero-v1'
 const urlsToCache = [
   '/',
   '/dashboard',
@@ -90,7 +90,7 @@ self.addEventListener('push', (event) => {
   }
 
   event.waitUntil(
-    self.registration.showNotification('💧 Hydra - Hora de Beber Água', options)
+    self.registration.showNotification('💧 AguaQuero - Hora de Beber Água', options)
   )
 })
 
@@ -116,7 +116,7 @@ self.addEventListener('notificationclick', (event) => {
   } else if (event.action === 'snooze') {
     // Snooze for 30 minutes
     setTimeout(() => {
-      self.registration.showNotification('💧 Hydra - Hora de Beber Água', {
+      self.registration.showNotification('💧 AguaQuero - Hora de Beber Água', {
         body: 'Não esqueça de beber água!',
         icon: '/icon-192.png',
         tag: 'water-reminder',
