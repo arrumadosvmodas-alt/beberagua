@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/hooks/useAuth'
-import { Droplet } from 'lucide-react'
 
 export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -24,7 +23,6 @@ export default function AuthPage() {
 
     try {
       if (isSignUp) {
-        // Validation
         if (!weight || !age) {
           throw new Error('Por favor, preencha peso e idade')
         }
@@ -40,15 +38,7 @@ export default function AuthPage() {
           throw new Error('Idade deve estar entre 1 e 120 anos')
         }
 
-        // Calcular meta: 30ml * peso (kg)
         const goalLiters = (weightNum * 30) / 1000
-
-        console.log('[Auth Page] Starting sign up:', {
-          email,
-          weight: weightNum,
-          age: ageNum,
-          goal_liters: goalLiters,
-        })
 
         await signUp(email, password, {
           weight: weightNum,
@@ -57,21 +47,16 @@ export default function AuthPage() {
         })
 
         setError('')
-        // Wait a bit before redirecting
         await new Promise(resolve => setTimeout(resolve, 500))
       } else {
-        console.log('[Auth Page] Starting sign in:', email)
         await signIn(email, password)
         setError('')
-        // Wait a bit before redirecting
         await new Promise(resolve => setTimeout(resolve, 500))
       }
 
-      console.log('[Auth Page] Auth successful, redirecting to dashboard')
       router.push('/dashboard')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro na autenticação'
-      console.error('[Auth Page] Auth error:', errorMessage)
       setError(errorMessage)
     } finally {
       setLoading(false)
@@ -79,49 +64,49 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#f7f7f7] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
-            <Droplet className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-[#1899d6] border-b-4 border-b-[#187fb3] rounded-3xl mb-4 text-4xl shadow-md animate-bounce">
+            💧
           </div>
-          <h1 className="text-3xl font-bold text-gray-800">Hydra</h1>
-          <p className="text-gray-600 text-sm">Rastreie sua hidratação diária</p>
+          <h1 className="text-4xl font-extrabold text-[#3c3c3c] tracking-tight">AguaQuero</h1>
+          <p className="text-[#afafaf] font-bold text-sm mt-1">Sua hidratação diária, divertida e simples.</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">
+        <div className="card-duo">
+          <h2 className="text-2xl font-extrabold text-[#3c3c3c] mb-6 text-center">
             {isSignUp ? 'Criar Conta' : 'Fazer Login'}
           </h2>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-lg text-sm">
+            <div className="mb-6 p-4 bg-[#ffebef] border-2 border-[#ffcdd2] text-[#ef5350] rounded-2xl text-sm font-bold">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <label className="block text-xs font-bold text-[#afafaf] uppercase tracking-wider mb-2">E-mail</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full px-4 py-3 border-2 border-[#e5e5e5] rounded-2xl focus:outline-none focus:border-[#1899d6] transition-all bg-[#fafafa] font-bold text-[#3c3c3c]"
                 placeholder="seu@email.com"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+              <label className="block text-xs font-bold text-[#afafaf] uppercase tracking-wider mb-2">Senha</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full px-4 py-3 border-2 border-[#e5e5e5] rounded-2xl focus:outline-none focus:border-[#1899d6] transition-all bg-[#fafafa] font-bold text-[#3c3c3c]"
                 placeholder="••••••••"
                 required
               />
@@ -129,54 +114,56 @@ export default function AuthPage() {
 
             {isSignUp && (
               <>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs font-bold text-[#afafaf] uppercase tracking-wider mb-2">
                       Peso (kg)
                     </label>
                     <input
                       type="number"
                       value={weight}
                       onChange={(e) => setWeight(e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-3 border-2 border-[#e5e5e5] rounded-2xl focus:outline-none focus:border-[#1899d6] transition-all bg-[#fafafa] font-bold text-[#3c3c3c]"
                       placeholder="70"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Idade</label>
+                    <label className="block text-xs font-bold text-[#afafaf] uppercase tracking-wider mb-2">Idade</label>
                     <input
                       type="number"
                       value={age}
                       onChange={(e) => setAge(e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-3 border-2 border-[#e5e5e5] rounded-2xl focus:outline-none focus:border-[#1899d6] transition-all bg-[#fafafa] font-bold text-[#3c3c3c]"
                       placeholder="30"
                       required
                     />
                   </div>
                 </div>
-                <p className="text-xs text-gray-500 text-center">
-                  Sua meta: ~{weight && weight ? ((parseInt(weight) * 30) / 1000).toFixed(1) : '2.1'}L/dia
-                </p>
+                {weight && (
+                  <p className="text-xs text-[#afafaf] text-center font-bold">
+                    Sua meta diária calculada: <span className="text-[#1899d6] font-extrabold">{((parseInt(weight) * 30) / 1000).toFixed(1)} Litros</span>
+                  </p>
+                )}
               </>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors disabled:opacity-50"
+              className="btn-3d-green w-full py-4 text-base font-extrabold uppercase disabled:opacity-50 disabled:pointer-events-none mt-2"
             >
               {loading ? 'Carregando...' : isSignUp ? 'Criar Conta' : 'Entrar'}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-gray-600 text-sm">
+          <div className="mt-6 text-center border-t-2 border-[#e5e5e5] pt-5">
+            <p className="text-[#afafaf] font-bold text-sm">
               {isSignUp ? 'Já tem uma conta?' : 'Não tem uma conta?'}
               <button
                 type="button"
                 onClick={() => setIsSignUp(!isSignUp)}
-                className="ml-2 text-blue-600 font-semibold hover:underline"
+                className="ml-2 text-[#1899d6] font-extrabold hover:underline"
               >
                 {isSignUp ? 'Faça login' : 'Crie uma'}
               </button>
@@ -185,18 +172,18 @@ export default function AuthPage() {
         </div>
 
         {/* Features */}
-        <div className="mt-8 grid grid-cols-3 gap-4 text-center">
-          <div>
-            <p className="text-2xl mb-2">💧</p>
-            <p className="text-xs text-gray-600">Rastreie água</p>
+        <div className="mt-10 grid grid-cols-3 gap-4 text-center">
+          <div className="card-duo py-3 px-2 flex flex-col items-center justify-center">
+            <span className="text-3xl mb-1">💧</span>
+            <p className="text-xs font-extrabold text-[#4b4b4b] uppercase tracking-wider">Rastrear</p>
           </div>
-          <div>
-            <p className="text-2xl mb-2">🔔</p>
-            <p className="text-xs text-gray-600">Lembretes</p>
+          <div className="card-duo py-3 px-2 flex flex-col items-center justify-center">
+            <span className="text-3xl mb-1">🔔</span>
+            <p className="text-xs font-extrabold text-[#4b4b4b] uppercase tracking-wider">Lembretes</p>
           </div>
-          <div>
-            <p className="text-2xl mb-2">📊</p>
-            <p className="text-xs text-gray-600">Análises</p>
+          <div className="card-duo py-3 px-2 flex flex-col items-center justify-center">
+            <span className="text-3xl mb-1">📊</span>
+            <p className="text-xs font-extrabold text-[#4b4b4b] uppercase tracking-wider">Gráficos</p>
           </div>
         </div>
       </div>

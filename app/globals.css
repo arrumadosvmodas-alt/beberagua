@@ -1,26 +1,105 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f7f7;
+  --foreground: #3c3c3c;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-outfit), "Outfit", sans-serif;
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-outfit), "Outfit", sans-serif;
+}
+
+/* Duolingo 3D Button Styles */
+.btn-3d-green {
+  background-color: #58cc02;
+  border-bottom: 4px solid #58a700;
+  color: #ffffff;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 16px;
+  transition: all 0.1s ease;
+}
+.btn-3d-green:hover {
+  background-color: #61e002;
+}
+.btn-3d-green:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+  margin-bottom: 2px;
+}
+
+.btn-3d-blue {
+  background-color: #1899d6;
+  border-bottom: 4px solid #187fb3;
+  color: #ffffff;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 16px;
+  transition: all 0.1s ease;
+}
+.btn-3d-blue:hover {
+  background-color: #24a5e2;
+}
+.btn-3d-blue:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+  margin-bottom: 2px;
+}
+
+.btn-3d-gray {
+  background-color: #ffffff;
+  border: 2px solid #e5e5e5;
+  border-bottom: 4px solid #e5e5e5;
+  color: #4b4b4b;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 16px;
+  transition: all 0.1s ease;
+}
+.btn-3d-gray:hover {
+  background-color: #fafafa;
+}
+.btn-3d-gray:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+  margin-bottom: 2px;
+}
+
+.btn-3d-red {
+  background-color: #ff4b4b;
+  border-bottom: 4px solid #ea2b2b;
+  color: #ffffff;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 16px;
+  transition: all 0.1s ease;
+}
+.btn-3d-red:hover {
+  background-color: #ff5f5f;
+}
+.btn-3d-red:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+  margin-bottom: 2px;
+}
+
+/* Duolingo Cards */
+.card-duo {
+  background-color: #ffffff;
+  border: 2px solid #e5e5e5;
+  border-radius: 20px;
+  padding: 24px;
 }

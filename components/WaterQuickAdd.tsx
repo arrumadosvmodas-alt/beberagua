@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Droplet } from 'lucide-react'
 
 interface WaterQuickAddProps {
   onAdd: (amount: number) => Promise<void>
@@ -9,10 +8,10 @@ interface WaterQuickAddProps {
 }
 
 const QUICK_OPTIONS = [
-  { label: '250ml', value: 250 },
-  { label: '500ml', value: 500 },
-  { label: '750ml', value: 750 },
-  { label: '1L', value: 1000 },
+  { label: '🥤 Copo (250ml)', value: 250 },
+  { label: '🥛 Garrafa (500ml)', value: 500 },
+  { label: '🍶 Garrafa G (750ml)', value: 750 },
+  { label: '🧪 Super Garrafa (1L)', value: 1000 },
 ]
 
 export default function WaterQuickAdd({ onAdd, isLoading = false }: WaterQuickAddProps) {
@@ -36,40 +35,43 @@ export default function WaterQuickAdd({ onAdd, isLoading = false }: WaterQuickAd
   }
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-        <Droplet className="w-5 h-5 text-blue-500" />
-        Adicionar água
-      </h2>
+    <div className="space-y-5">
+      <div>
+        <span className="text-xs font-bold text-[#afafaf] uppercase tracking-wider">Ação Rápida</span>
+        <h3 className="text-xl font-extrabold text-[#3c3c3c]">Quanto você bebeu?</h3>
+      </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-3">
         {QUICK_OPTIONS.map((option) => (
           <button
             key={option.value}
             onClick={() => handleAdd(option.value)}
             disabled={isLoading}
-            className="p-3 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 rounded-lg font-semibold text-blue-700 transition-colors disabled:opacity-50"
+            className="btn-3d-blue py-3 px-4 text-sm font-extrabold uppercase disabled:opacity-50 disabled:pointer-events-none"
           >
             {option.label}
           </button>
         ))}
       </div>
 
-      <div className="flex gap-2">
-        <input
-          type="number"
-          value={customAmount}
-          onChange={(e) => setCustomAmount(e.target.value)}
-          placeholder="Digite em ml"
-          className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-        />
-        <button
-          onClick={handleCustomAdd}
-          disabled={isLoading || !customAmount}
-          className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
-        >
-          Adicionar
-        </button>
+      <div className="pt-2">
+        <span className="text-xs font-bold text-[#afafaf] uppercase tracking-wider">Quantidade Personalizada</span>
+        <div className="flex gap-3 mt-2">
+          <input
+            type="number"
+            value={customAmount}
+            onChange={(e) => setCustomAmount(e.target.value)}
+            placeholder="Quantidade em ml..."
+            className="flex-1 px-4 py-3 border-2 border-[#e5e5e5] rounded-2xl focus:outline-none focus:border-[#1899d6] transition-all bg-[#fafafa] font-bold text-[#3c3c3c]"
+          />
+          <button
+            onClick={handleCustomAdd}
+            disabled={isLoading || !customAmount}
+            className="btn-3d-green px-6 py-3 text-sm font-extrabold uppercase disabled:opacity-50 disabled:pointer-events-none"
+          >
+            Adicionar
+          </button>
+        </div>
       </div>
     </div>
   )
